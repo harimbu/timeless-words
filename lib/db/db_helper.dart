@@ -6,14 +6,14 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:timeless_words/model/word_model.dart';
 
-class DbHelper {
+class DBHelper {
   static Database? _db;
   final String _dbName = 'timeless_words.db';
 
-  Future<Database?> get db async {
-    if (_db != null) return _db;
+  Future<Database> get db async {
+    if (_db != null) return _db!;
     _db = await initDb();
-    return _db;
+    return _db!;
   }
 
   initDb() async {
@@ -25,7 +25,7 @@ class DbHelper {
       // Copy from asset
       ByteData data = await rootBundle.load(join("assets", _dbName));
       List<int> bytes =
-          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
       // Write and flush the bytes written
       await io.File(path).writeAsBytes(bytes, flush: true);
@@ -35,48 +35,26 @@ class DbHelper {
     return theDb;
   }
 
-  Future<List<WordModel>> getAllItems() async {
-    var dbClient = await db;
-    List<Map> rows = await dbClient!.rawQuery('SELECT * FROM word');
-    List<WordModel> wordList = [];
-    for (int i = 0; i < rows.length; i++) {
-      wordList.add(
-        WordModel(
-          id: rows[i]['id'],
-          kor: rows[i]['kor'],
-          eng: rows[i]['eng'],
-          writer: rows[i]['writer'],
-          showing: rows[i]['showing'],
-          adding: rows[i]['adding'],
-        ),
-      );
-    }
-    return wordList;
+  Future<List<Map<String, dynamic>>> getAllWords() async {
+    final dbClient = await db;
+    return await dbClient.query('word');
   }
 
-  // Update an item by id
-  Future<int> updateShow(int id, int showing) async {
-    var dbClient = await db;
-
-    final data = {
-      'showing': showing,
-    };
-
-    final result =
-        await dbClient!.update('word', data, where: "id = ?", whereArgs: [id]);
-    return result;
+  Future<Map<String, dynamic>?> getWordById(int id) async {
+    final dbClient = await db;
+    final results = await dbClient.query('word', where: 'id = ?', whereArgs: [id]);
+    return results.isNotEmpty ? results.first : null;
   }
 
-  // Update an item by id
-  Future<int> updateAdd(int id, int adding) async {
-    var dbClient = await db;
+  Future<void> insertWord(Map<String, dynamic> word) async {
+    final dbClient = await db;
+    await dbClient.insert('word', word, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
 
-    final data = {
-      'adding': adding,
-    };
-
-    final result =
-        await dbClient!.update('word', data, where: "id = ?", whereArgs: [id]);
-    return result;
+  Future<void> deleteWord(int id) async {
+    final dbClient = await db;
+    await dbClient.delete('word', where: 'id = ?', whereArgs: [id]);
   }
 }
+
+final db = DBHelper();

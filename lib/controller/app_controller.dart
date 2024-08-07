@@ -1,55 +1,60 @@
 import 'package:get/get.dart';
-
-import '../db/db_helper.dart';
+import 'package:timeless_words/db/db_helper.dart';
+import 'package:timeless_words/model/word_model.dart';
 
 class AppController extends GetxController {
-  final db = DbHelper();
+  var wordList = <WordModel>[].obs;
+  var currentWord = WordModel(
+    id: 0,
+    eng: '',
+    kor: '',
+    writer: '',
+    showing: 0,
+    adding: 0,
+  ).obs;
+  var showKor = false.obs;
+  var savedWords = <WordModel>[].obs;
+  RxBool darkMode = true.obs;
 
   @override
   void onInit() {
     super.onInit();
-    getCount();
-    getWords();
+    loadWordList();
+    loadSavedWords();
   }
 
-  RxBool darkMode = true.obs;
-
-  var words = [].obs;
-  var filterdWords = [].obs;
-  RxInt addcount = 0.obs;
-
-  void changeTheme() {
-    darkMode(!darkMode.value);
+  void loadWordList() async {
+    final data = await db.getAllWords();
+    wordList.value = data.map((e) => WordModel.fromJson(e)).toList();
   }
 
-  void getWords() async {
-    final data = await db.getAllItems();
-    var output = data.toList();
-    words(data);
-  }
-
-  void getCount() async {
-    final data = await db.getAllItems();
-    var addItem = data.where((e) => e.adding == 1).toList();
-    filterdWords(addItem);
-    addcount.value = addItem.length;
-  }
-
-  void toggleShow(int id, int showing) async {
-    if (showing == 1) {
-      await db.updateShow(id, 0);
-    } else {
-      await db.updateShow(id, 1);
+  void getWordById(int id) async {
+    final data = await db.getWordById(id);
+    if (data != null) {
+      currentWord.value = WordModel.fromJson(data);
     }
-    getCount();
   }
 
-  void toggleAdd(int id, int adding) async {
-    if (adding == 1) {
-      await db.updateAdd(id, 0);
-    } else {
-      await db.updateAdd(id, 1);
-    }
-    getCount();
+  void toggleKorVisibility() {
+    showKor.value = !showKor.value;
   }
+
+  void saveWord() async {
+    if (!savedWords.any((word) => word.id == currentWord.value.id)) {
+      savedWords.add(currentWord.value);
+      await db.insertWord(currentWord.value.toJson());
+    }
+  }
+
+  void deleteWord(int id) async {
+    savedWords.removeWhere((word) => word.id == id);
+    await db.deleteWord(id);
+  }
+
+  void loadSavedWords() async {
+    final data = await db.getAllWords();
+    savedWords.value = data.map((e) => WordModel.fromJson(e)).toList();
+  }
+
+  int get savedWordCount => savedWords.length;
 }

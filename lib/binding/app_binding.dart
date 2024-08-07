@@ -4,6 +4,6 @@ import 'package:timeless_words/controller/app_controller.dart';
 class AppBinding extends Bindings {
   @override
   void dependencies() {
-    Get.put(AppController());
+    Get.lazyPut(() => AppController());
   }
 }

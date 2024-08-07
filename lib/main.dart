@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:timeless_words/binding/app_binding.dart';
 import 'package:timeless_words/controller/app_controller.dart';
+import 'package:timeless_words/screen/book.dart';
+import 'package:timeless_words/screen/detail.dart';
 import 'package:timeless_words/screen/home.dart';
 import 'theme/themes.dart';
 
@@ -27,6 +29,8 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         getPages: [
           GetPage(name: '/', page: () => Home()),
+          GetPage(name: '/detail', page: () => Detail()),
+          GetPage(name: '/book', page: () => Book()),
         ],
       ),
     );
