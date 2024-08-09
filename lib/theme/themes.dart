@@ -2,73 +2,79 @@ import 'package:flutter/material.dart';
 
 class Themes {
   static Color accent = const Color(0xFF00B855);
-  static Color bg1 = const Color(0xFFF2F6FF);
-  static Color bg2 = const Color(0xFFE8EEFF);
-  static Color bg3 = const Color(0xFFDDE6FF);
-  static Color bg4 = const Color(0xFFBEBEBE);
-  static Color darkBg1 = const Color(0xFF111111);
-  static Color darkBg2 = const Color(0xFF222222);
-  static Color darkBg3 = const Color(0xFF666666);
+  static Color bg1 = const Color(0xFFEAEAEA);
+  static Color bg2 = const Color(0xFFE0E0E0);
+  static Color primary = const Color(0xFF000000);
+  static Color second = const Color(0xFF333333);
 
-  static Color white = const Color(0xFFFFFFFF);
-  static Color black = const Color(0xFF000000);
+  static Color darkBg1 = const Color(0xFF111111);
+  static Color darkBg2 = const Color(0xFF000000);
+  static Color darkPrimary = const Color(0xFFFFFFFF);
+  static Color darkSecond = const Color(0xFFD4D4D4);
+
+  static final dark = ThemeData.dark().copyWith(
+    scaffoldBackgroundColor: darkBg1,
+    appBarTheme: AppBarTheme(
+      toolbarHeight: 90,
+      elevation: 0,
+      backgroundColor: darkBg1,
+    ),
+    textTheme: TextTheme(
+      titleLarge: TextStyle(
+        fontSize: 22.0,
+        fontWeight: FontWeight.bold,
+        color: darkPrimary,
+      ),
+      bodyLarge: TextStyle(
+        color: darkPrimary,
+        fontSize: 18,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 16.0,
+        color: darkSecond,
+      ),
+      bodySmall: TextStyle(
+        fontSize: 14.0,
+        color: darkSecond,
+      ),
+    ),
+    iconTheme: IconThemeData(
+      color:darkSecond,
+    ),
+
+  );
 
   static final light = ThemeData.light().copyWith(
-    scaffoldBackgroundColor: bg2,
+    scaffoldBackgroundColor: bg1,
     appBarTheme: AppBarTheme(
-      toolbarHeight: 80,
+      toolbarHeight: 90,
       elevation: 0,
-      backgroundColor: bg2,
-      iconTheme: IconThemeData(
-        color: darkBg1,
-      ),
+      backgroundColor: bg1,
     ),
     textTheme: TextTheme(
       headlineLarge: TextStyle(
-        color: darkBg1,
+        color: primary,
       ),
       titleLarge: TextStyle(
         fontWeight: FontWeight.bold,
-        color: darkBg1,
+        fontSize: 22,
+        color: primary,
       ),
       bodyLarge: TextStyle(
-        color: darkBg1,
+        color: primary,
         fontSize: 18,
       ),
       bodyMedium: TextStyle(
-        fontSize: 14.0,
-        color: darkBg3,
+        fontSize: 16.0,
+        color: second,
       ),
-      bodySmall: const TextStyle(
+      bodySmall: TextStyle(
         fontSize: 14.0,
+        color: second,
       ),
     ),
-  );
-
-  static final dark = ThemeData.dark().copyWith(
-    scaffoldBackgroundColor: darkBg2,
-    appBarTheme: AppBarTheme(
-      toolbarHeight: 80,
-      elevation: 0,
-      backgroundColor: darkBg2,
-    ),
-    textTheme: TextTheme(
-      titleLarge: TextStyle(
-        fontSize: 20.0,
-        fontWeight: FontWeight.bold,
-        color: bg1,
-      ),
-      bodyLarge: TextStyle(
-        color: bg1,
-        fontSize: 18,
-      ),
-      bodyMedium: TextStyle(
-        fontSize: 14.0,
-        color: bg4,
-      ),
-      bodySmall: const TextStyle(
-        fontSize: 14.0,
-      ),
+    iconTheme: IconThemeData(
+      color: second,
     ),
   );
 }

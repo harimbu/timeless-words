@@ -1,60 +1,87 @@
-import 'dart:async';
-import 'dart:io' as io;
-import 'package:flutter/services.dart';
+import 'dart:typed_data';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'dart:io';
+
 import 'package:timeless_words/model/word_model.dart';
 
 class DBHelper {
-  static Database? _db;
-  final String _dbName = 'timeless_words.db';
+  static final DBHelper _instance = DBHelper._internal();
+  static Database? _database;
 
-  Future<Database> get db async {
-    if (_db != null) return _db!;
-    _db = await initDb();
-    return _db!;
+  factory DBHelper() => _instance;
+
+  DBHelper._internal();
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDB();
+    return _database!;
   }
 
-  initDb() async {
-    io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, _dbName);
-    bool dbExists = await io.File(path).exists();
+  Future<Database> _initDB() async {
+    String dbPath = join(await getDatabasesPath(), 'timeless_words.db');
+
+    // Check if the database exists
+    bool dbExists = await databaseExists(dbPath);
 
     if (!dbExists) {
-      // Copy from asset
-      ByteData data = await rootBundle.load(join("assets", _dbName));
-      List<int> bytes =
-      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      // If the database doesn't exist, copy it from assets
+      print("Creating a new copy from assets");
 
-      // Write and flush the bytes written
-      await io.File(path).writeAsBytes(bytes, flush: true);
+      try {
+        await Directory(dirname(dbPath)).create(recursive: true);
+
+        // Copy from assets
+        ByteData data = await rootBundle.load('assets/timeless_words.db');
+        List<int> bytes =
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+
+        // Write the copied data to the database file
+        await File(dbPath).writeAsBytes(bytes, flush: true);
+      } catch (e) {
+        print("Error copying database: $e");
+      }
+    } else {
+      print("Opening existing database");
     }
 
-    var theDb = await openDatabase(path, version: 1);
-    return theDb;
+    // Open the database
+    return await openDatabase(dbPath, version: 1);
   }
 
-  Future<List<Map<String, dynamic>>> getAllWords() async {
-    final dbClient = await db;
-    return await dbClient.query('word');
+  Future<List<Word>> getWords() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('word');
+
+    return List.generate(maps.length, (i) {
+      return Word.fromMap(maps[i]);
+    });
   }
 
-  Future<Map<String, dynamic>?> getWordById(int id) async {
-    final dbClient = await db;
-    final results = await dbClient.query('word', where: 'id = ?', whereArgs: [id]);
-    return results.isNotEmpty ? results.first : null;
-  }
-
-  Future<void> insertWord(Map<String, dynamic> word) async {
-    final dbClient = await db;
-    await dbClient.insert('word', word, conflictAlgorithm: ConflictAlgorithm.replace);
+  Future<void> insertWord(Word word) async {
+    final db = await database;
+    await db.insert('word', word.toMap());
   }
 
   Future<void> deleteWord(int id) async {
-    final dbClient = await db;
-    await dbClient.delete('word', where: 'id = ?', whereArgs: [id]);
+    final db = await database;
+    await db.delete('word', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<Word>> getBookmarkedWords() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('word', where: 'adding = ?', whereArgs: [1]);
+
+    return List.generate(maps.length, (i) {
+      return Word.fromMap(maps[i]);
+    });
+  }
+
+  Future<void> updateWord(Word word) async {
+    final db = await database;
+    await db.update('word', word.toMap(), where: 'id = ?', whereArgs: [word.id]);
   }
 }
-
-final db = DBHelper();

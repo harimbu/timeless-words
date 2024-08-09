@@ -1,21 +1,22 @@
-class WordModel {
-  WordModel({
+class Word {
+  final int id;
+  final String eng;
+  final String kor;
+  final String writer;
+  final int showing;
+  int adding;
+
+  Word({
     required this.id,
     required this.eng,
     required this.kor,
     required this.writer,
     required this.showing,
-    required this.adding,
+    this.adding = 0,
   });
 
-  int id;
-  String eng;
-  String kor;
-  String writer;
-  int showing;
-  int adding;
-
-  factory WordModel.fromJson(Map<String, dynamic> json) => WordModel(
+  // 데이터베이스로부터 받아온 데이터를 Word 객체로 변환
+  factory Word.fromMap(Map<String, dynamic> json) => Word(
     id: json['id'],
     eng: json['eng'],
     kor: json['kor'],
@@ -24,7 +25,8 @@ class WordModel {
     adding: json['adding'],
   );
 
-  Map<String, dynamic> toJson() => {
+  // Word 객체를 데이터베이스에 저장하기 위한 Map으로 변환
+  Map<String, dynamic> toMap() => {
     'id': id,
     'eng': eng,
     'kor': kor,
